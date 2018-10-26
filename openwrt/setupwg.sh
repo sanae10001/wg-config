@@ -4,7 +4,7 @@ serverport=51820
 serverpubkey=""
 
 opkg update
-opkg install luci-app-wireguard ntpdate
+opkg install luci-app-wireguard ntpdate iptables ipset
 
 wg genkey | tee privatekey | wg pubkey > publickey
 privatekey=$(cat privatekey)
