@@ -1,16 +1,40 @@
-# network.wg=interface
-# network.wg.proto='wireguard'
-# network.wg.private_key='WPmlnNsJ8E0WrQw6P6qUxHyiUS9sE2E4XHqPc/tni1s='
-# network.wg.addresses='10.0.0.2/24'
-# network.wg.mtu='1300'
-# network.wg.listen_port='51820'
-# network.wg.auto='0'
-# network.@wireguard_wg[0]=wireguard_wg
-# network.@wireguard_wg[0].public_key='m/vCfOjN/fLq8tZH53uwL/Ve2NzrzzNDcTcE+fUnjxE='
-# network.@wireguard_wg[0].endpoint_host='52.196.249.143'
-# network.@wireguard_wg[0].endpoint_port='51820'
-# network.@wireguard_wg[0].persistent_keepalive='25'
-# network.@wireguard_wg[0].allowed_ips='0.0.0.0/0'
-# network.@wireguard_wg[0].route_allowed_ips='0'
+addresses="10.0.0.2/24"
+serverhost="1.2.3.4"
+serverport=51820
+serverpubkey=""
 
-# uci add network interface wg
+opkg update
+opkg install luci-app-wireguard
+
+wg genkey | tee privatekey | wg pubkey > publickey
+privatekey=$(cat privatekey)
+# publickey=$(wg pubkey <<< $privatekey)
+
+cat >> /etc/config/network << EOF
+config interface 'wg'
+        option proto 'wireguard'
+        option private_key '$privatekey'
+        list addresses '$addresses'
+        option mtu '1300'
+        option listen_port '51820'
+
+config wireguard_wg
+        option public_key '$serverpubkey'
+        option endpoint_host '$serverhost'
+        option endpoint_port '$serverport'
+        option persistent_keepalive '25'
+        list allowed_ips '0.0.0.0/0'
+        option route_allowed_ips '0'
+EOF
+/etc/init.d/network restart
+
+uci add_list dhcp.@dnsmasq[0].server="8.8.8.8"
+uci set dhcp.@dnsmasq[0].noresolv=1
+uci commit
+/etc/init.d/dnsmasq restart
+
+uci set firewall.@zone[1].network="wan wan6 wg"
+uci commit
+/etc/init.d/firewall restart
+
+reboot
