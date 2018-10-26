@@ -14,14 +14,14 @@ genroutefile() {
     # ipset destroy $setname
 }
 
-if [-e "$setfilepath"] 
+if test -e "$setfilepath"
 then
     ipset restore < "$setfilepath"
 else
     genroutefile
 fi
 
-iptables -t mangle -A PREROUTING -m set --match-set $setname dst -j MARK --set-mark 100
+iptables -t mangle -A PREROUTING -m set --match-set $setname dst -j MARK --set-mark 1234
 wg set wg fwmark 1234
 
 ip route add default dev wg table 2468
