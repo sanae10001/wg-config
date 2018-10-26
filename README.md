@@ -1,0 +1,2 @@
+# wg-config
+Wireguard scripts
