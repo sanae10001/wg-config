@@ -1,3 +1,5 @@
+ntpdate 0.asia.pool.ntp.org
+
 setname="chnroute"
 routefilepath=$HOME/$setname.txt
 setfilepath=$HOME/$setname
